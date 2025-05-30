@@ -11,7 +11,7 @@ interface TodoItemProps {
 
 export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   return (
-    <div className="flex items-center justify-between p-4 border-b">
+    <div className="flex items-center justify-between p-4 not-last:border-b border-blue-950">
       <div className="flex items-center">
         <input
           type="checkbox"
@@ -19,16 +19,13 @@ export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
           onChange={() => onToggle(todo.id)}
           className="h-4 w-4 mr-2"
         />
-        <span className={`${todo.completed ? 'line-through text-gray-500' : ''}`}>
+        <span className={`${todo.completed ? 'line-through text-gray-500' : 'text-blue-950 dark:text-blue-500'}`}>
           {todo.title}
         </span>
       </div>
-      <button
-        onClick={() => onDelete(todo.id)}
-        className="text-red-500 hover:text-red-700"
-      >
-        Delete
-      </button>
+      <form onSubmit={() => onDelete(todo.id)}>
+        <button type="submit" className="text-red-500 hover:text-red-700">Delete</button>
+      </form>
     </div>
   );
 }
