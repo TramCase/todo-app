@@ -1,37 +1,68 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TodoItem from './TodoItem';
-import { Todo } from '../types/todo';
+import { Todo } from '../../db/schema';
+import { getTodos, addTodo as addTodoAction, toggleTodo as toggleTodoAction, deleteTodo as deleteTodoAction } from '../actions/todos';
 
 export default function TodoList() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const addTodo = () => {
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const fetchedTodos = await getTodos();
+        setTodos(fetchedTodos);
+      } catch (error) {
+        console.error('Failed to fetch todos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTodos();
+  }, []);
+
+  const addTodo = async () => {
     if (newTodo.trim() === '') return;
     
-    const todo: Todo = {
+    const todo = {
       id: Date.now().toString(),
       title: newTodo,
       completed: false,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     };
     
-    setTodos([...todos, todo]);
-    setNewTodo('');
+    try {
+      await addTodoAction(todo);
+      const updatedTodos = await getTodos();
+      setTodos(updatedTodos);
+      setNewTodo('');
+    } catch (error) {
+      console.error('Failed to add todo:', error);
+    }
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos(
-      todos.map(todo => 
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  const toggleTodo = async (id: string) => {
+    try {
+      await toggleTodoAction(id);
+      const updatedTodos = await getTodos();
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error('Failed to toggle todo:', error);
+    }
   };
 
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+  const deleteTodo = async (id: string) => {
+    try {
+      await deleteTodoAction(id);
+      const updatedTodos = await getTodos();
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error('Failed to delete todo:', error);
+    }
   };
 
   return (
@@ -54,7 +85,9 @@ export default function TodoList() {
       </div>
       
       <div className="bg-white rounded shadow">
-        {todos.length === 0 ? (
+        {isLoading ? (
+          <div className="p-4 text-center text-gray-500">Loading todos...</div>
+        ) : todos.length === 0 ? (
           <div className="p-4 text-center text-gray-500">No todos yet. Add one above!</div>
         ) : (
           todos.map(todo => (
@@ -69,4 +102,6 @@ export default function TodoList() {
       </div>
     </div>
   );
+
+
 }

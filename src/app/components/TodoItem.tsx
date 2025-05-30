@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Todo } from '../types/todo';
+import { Todo } from '../../db/schema';
 
 interface TodoItemProps {
   todo: Todo;
